@@ -1,52 +1,51 @@
 package org.example;
 
 public class Main {
+
     public static void main(String[] args) {
-        // 1. Создаем граф
-        WeightedGraph<String> graph = new WeightedGraph<>();
+        WeightedGraph<String> weightedGraph = new WeightedGraph<>(true);
+        fillWithWeights(weightedGraph);
 
-        // 2. Создаем вершины
-        Vertex<String> a = new Vertex<>("A");
-        Vertex<String> b = new Vertex<>("B");
-        Vertex<String> c = new Vertex<>("C");
-        Vertex<String> d = new Vertex<>("D");
+        System.out.println("Dijkstra:");
+        Search<String> djk = new DijkstraSearch<>(weightedGraph, "Almaty");
+        outputPath(djk, "Kyzylorda");
 
-        // 3. Добавляем связи (для BFS веса не важны, но они должны быть в структуре)
-        a.addAdjacentVertex(b, 1.0);
-        b.addAdjacentVertex(c, 1.0);
-        a.addAdjacentVertex(c, 5.0); // Прямой путь длиннее по весу, но короче по шагам
-        c.addAdjacentVertex(d, 1.0);
 
-        // Регистрируем все вершины в графе
-        graph.addVertex(a);
-        graph.addVertex(b);
-        graph.addVertex(c);
-        graph.addVertex(d);
+        System.out.println("--------------------------------");
 
-        // --- ИСПОЛЬЗОВАНИЕ BFS ---
-        System.out.println("--- Результаты BFS ---");
-        BreadthFirstSearch<String> bfs = new BreadthFirstSearch<>(graph, a);
+        UnweightedGraph<String> graph = new UnweightedGraph<>(true);
+        fillWithoutWeights(graph);
 
-        if (bfs.hasPathTo(d)) {
-            System.out.print("Путь от A до D (BFS): ");
-            for (Vertex<String> v : bfs.pathTo(d)) {
-                System.out.print(v.getData() + " ");
-            }
-            // Выведет: A C D (так как это меньше всего "прыжков" по ребрам)
-            System.out.println();
+        System.out.println("BFS:");
+        Search<String> bfs = new BreadthFirstSearch<>(graph, "Almaty");
+        outputPath(bfs, "Kyzylorda");
+    }
+
+    public static void fillWithoutWeights(UnweightedGraph<String> graph) {
+        graph.addEdge("Almaty", "Astana"); // 16 - 19
+        graph.addEdge("Shymkent", "Atyrau");
+        graph.addEdge("Atyrau", "Astana");
+        graph.addEdge("Almaty", "Shymkent");
+        graph.addEdge("Shymkent", "Astana");
+        graph.addEdge("Astana", "Kostanay");
+        graph.addEdge("Shymkent", "Kyzylorda");
+    }
+
+    public static void fillWithWeights(WeightedGraph<String> graph) {
+        graph.addEdge("Almaty", "Astana", 2.1);
+        graph.addEdge("Shymkent", "Atyrau", 7.8);
+        graph.addEdge("Atyrau", "Astana", 7.1);
+        graph.addEdge("Almaty", "Shymkent", 7.2);
+        graph.addEdge("Shymkent", "Astana", 3.9);
+        graph.addEdge("Astana", "Kostanay", 3.5);
+        graph.addEdge("Shymkent", "Kyzylorda", 5.4);
+    }
+
+    public static void outputPath(Search<String> search, String key) {
+        for (String v : search.pathTo(key)) {
+            System.out.print(v + " -> ");
         }
 
-        // --- ИСПОЛЬЗОВАНИЕ DIJKSTRA ---
-        System.out.println("\n--- Результаты Dijkstra ---");
-        DijkstraSearch<String> dijkstra = new DijkstraSearch<>(graph, a);
-
-        if (dijkstra.hasPathTo(d)) {
-            System.out.print("Путь от A до D (Dijkstra): ");
-            for (Vertex<String> v : dijkstra.pathTo(d)) {
-                System.out.print(v.getData() + " ");
-            }
-            // Выведет: A B C D (вес 1+1+1=3, что меньше прямого пути A-C весом 5)
-            System.out.println("\nОбщая дистанция: " + dijkstra.getDistanceTo(d));
-        }
+        System.out.println();
     }
 }
