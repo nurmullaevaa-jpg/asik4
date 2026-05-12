@@ -2,37 +2,35 @@ package org.example;
 import java.util.*;
 
 class DijkstraSearch<V> extends Search<V> {
-    private Map<Vertex<V>, Double> distTo = new HashMap<>();
-    private PriorityQueue<Vertex<V>> pq = new PriorityQueue<>(Comparator.comparing(distTo::get));
+    private final Map<Vertex<V>, Double> distTo = new HashMap<>();
+    private final PriorityQueue<Vertex<V>> pq;
 
-    public DijkstraSearch(WeightedGraph<V> graph, Vertex<V> source) {
-        super(source);
-        for (Vertex<V> v : graph.getVertices()) {
+    public DijkstraSearch(WeightedGraph<V> graph, V startData) {
+        super(graph.getVertex(startData));
+        pq = new PriorityQueue<>(Comparator.comparing(v -> distTo.getOrDefault(v, Double.POSITIVE_INFINITY)));
+
+        for (Vertex<V> v : graph.getAllVertices()) {
             distTo.put(v, Double.POSITIVE_INFINITY);
         }
-        distTo.put(source, 0.0);
-        edgeTo.put(source, null);
-        pq.add(source);
+
+        Vertex<V> start = graph.getVertex(startData);
+        distTo.put(start, 0.0);
+        pq.add(start);
 
         while (!pq.isEmpty()) {
-            relax(pq.poll());
-        }
-    }
-
-    private void relax(Vertex<V> v) {
-        for (Map.Entry<Vertex<V>, Double> entry : v.getAdjacentVertices().entrySet()) {
-            Vertex<V> neighbor = entry.getKey();
-            double weight = entry.getValue();
-            if (distTo.get(neighbor) > distTo.get(v) + weight) {
-                distTo.put(neighbor, distTo.get(v) + weight);
-                edgeTo.put(neighbor, v);
-                pq.remove(neighbor);
-                pq.add(neighbor);
+            Vertex<V> v = pq.poll();
+            for (var entry : v.getAdjacentVertices().entrySet()) {
+                relax(v, entry.getKey(), entry.getValue());
             }
         }
     }
 
-    public double getDistanceTo(Vertex<V> v) {
-        return distTo.get(v);
+    private void relax(Vertex<V> v, Vertex<V> w, double weight) {
+        if (distTo.get(w) > distTo.get(v) + weight) {
+            distTo.put(w, distTo.get(v) + weight);
+            edgeTo.put(w, v);
+            pq.remove(w);
+            pq.add(w);
+        }
     }
 }
